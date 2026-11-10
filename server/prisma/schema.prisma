@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  user_id   Int    @id @default(autoincrement())
+  firstname String
+  lastname  String
+  username  String @unique
+  password  String
+  role      String // "admin" | "user" | "visitor"
+
+  farm_id Int?
+  farm    Farm? @relation(fields: [farm_id], references: [farm_id])
+
+  @@map("user")
+}
+
+model Farm {
+  farm_id  Int    @id @default(autoincrement())
+  name     String
+  location String
+
+  cows  Cow[]
+  users User[]
+
+  @@map("farm")
+}
+
+model Cow {
+  cow_id     Int      @id @default(autoincrement())
+  farm_id    Int
+  tag        String   @unique
+  birth_date DateTime
+  sex        String // "F" ou "M"
+
+  mother_id Int?
+  father_id Int?
+
+  farm Farm @relation(fields: [farm_id], references: [farm_id])
+
+  mother     Cow?  @relation("CowMother", fields: [mother_id], references: [cow_id])
+  children_m Cow[] @relation("CowMother")
+
+  father     Cow?  @relation("CowFather", fields: [father_id], references: [cow_id])
+  children_f Cow[] @relation("CowFather")
+
+  calvings Calving[] @relation("CowCalvings")
+  calves   Calving[] @relation("CowCalves")
+
+  calvings_as_bull Calving[] @relation("CowFatherCalving")
+
+  @@map("cow")
+}
+
+model Calving {
+  calving_id Int  @id @default(autoincrement())
+  cow_id     Int
+  bull_id    Int?
+  calf_id    Int?
+
+  start_date DateTime
+  end_date   DateTime?
+  state      String
+
+  cow  Cow  @relation("CowCalvings", fields: [cow_id], references: [cow_id])
+  bull Cow? @relation("CowFatherCalving", fields: [bull_id], references: [cow_id])
+  calf Cow? @relation("CowCalves", fields: [calf_id], references: [cow_id])
+
+  @@map("calving")
+}
