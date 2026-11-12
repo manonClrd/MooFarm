@@ -92,7 +92,7 @@ router.post("/", async (req, res) => {
     }
 
     const user = await prisma.user.create({
-      data: { firstname, lastname, username, password, role, farm_id },
+      data: { firstname, lastname, username, password: await bcrypt.hash(password, 10), role, farm_id },
       include,
     });
     res.status(201).json(sanitize(user));
@@ -124,7 +124,7 @@ router.put("/:id", async (req, res) => {
         firstname,
         lastname,
         username,
-        password,
+        password: await bcrypt.hash(password, 10),
         role,
         farm_id: farm_id ?? null,
       },
@@ -155,7 +155,7 @@ router.patch("/:id", async (req, res) => {
 
     const user = await prisma.user.update({
       where: { user_id: Number(req.params.id) },
-      data: { firstname, lastname, username, password, role, farm_id },
+      data: { firstname, lastname, username, password: password !== undefined ? await bcrypt.hash(password, 10) : undefined, role, farm_id },
       include,
     });
     res.json(sanitize(user));

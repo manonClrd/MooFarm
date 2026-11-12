@@ -4,15 +4,22 @@ import farmRoutes from "./routes/farm.js";
 import userRoutes from "./routes/user.js";
 import cowRoutes from "./routes/cow.js";
 import calvingRoutes from "./routes/calving.js";
+import authRoutes from "./routes/auth.js";
+import { authenticate, authorize, readOnlyForVisitors } from "./middleware/auth.js";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/farm", farmRoutes);
-app.use("/user", userRoutes);
-app.use("/cow", cowRoutes);
-app.use("/calving", calvingRoutes);
+app.use("/auth", authRoutes); // public : register & login
+
+app.use("/farm", authenticate, readOnlyForVisitors, farmRoutes);
+app.use("/cow", authenticate, readOnlyForVisitors, cowRoutes);
+app.use("/calving", authenticate, readOnlyForVisitors, calvingRoutes);
+app.use("/user", authenticate, authorize("admin"), userRoutes);
+
+
+
 
 app.get("/", (req, res) => {
   res.send("Backend OK");
