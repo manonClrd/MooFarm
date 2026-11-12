@@ -6,10 +6,17 @@ import cowRoutes from "./routes/cow.js";
 import calvingRoutes from "./routes/calving.js";
 import authRoutes from "./routes/auth.js";
 import { authenticate, authorize, readOnlyForVisitors } from "./middleware/auth.js";
-
+import path from "path";
+import { fileURLToPath } from "url";
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+app.use("/admin", express.static(path.join(__dirname, "public")));
+
+
 
 app.use("/auth", authRoutes); // public : register & login
 
